@@ -2,13 +2,13 @@
 
 A portfolio and discovery site for an AI creator. Visitors browse published images, videos, prompts, and tutorials. An administrator manages the archive from `/admin`.
 
-The public pages read from MySQL. Nothing in the gallery is hardcoded into the page components. Demonstration records are created only by the seed script and are labeled as demonstration content.
+The public pages read from PostgreSQL. Nothing in the gallery is hardcoded into the page components. Demonstration records are created only by the seed script and are labeled as demonstration content.
 
 ## Prerequisites
 
 - Node.js 22
 - npm
-- MySQL 8
+- PostgreSQL 16
 - Optional: an S3-compatible bucket for production media
 
 ## Installation
@@ -20,17 +20,27 @@ cp .env.example .env
 
 Edit `.env`. Set `DATABASE_URL`, `SESSION_PEPPER`, and `NEXT_PUBLIC_SITE_URL`. Do not put real passwords in `.env.example`.
 
-## MySQL
+## PostgreSQL
 
-Create a database and a user that can run migrations:
+Create a database and a user that can run migrations. The user needs permission to create a shadow database when you use `prisma migrate dev`.
 
 ```sql
-CREATE DATABASE ai_creative_vault CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'vault'@'%' IDENTIFIED BY 'change-me';
-GRANT ALL PRIVILEGES ON ai_creative_vault.* TO 'vault'@'%';
+CREATE USER vault WITH PASSWORD 'change-me' CREATEDB;
+CREATE DATABASE ai_creative_vault OWNER vault;
 ```
 
-`prisma migrate dev` also needs permission to create a shadow database, or you can run `npm run db:deploy` against an existing migration history.
+A local Docker instance is enough for development:
+
+```bash
+docker run -d --name ai-creative-vault-postgres \
+  -e POSTGRES_USER=vault \
+  -e POSTGRES_PASSWORD=change-me \
+  -e POSTGRES_DB=ai_creative_vault \
+  -p 127.0.0.1:5432:5432 \
+  postgres:16
+```
+
+Set `DATABASE_URL` to `postgresql://vault:change-me@127.0.0.1:5432/ai_creative_vault`. Production builds prerender public pages, so the build environment must be able to reach this database. A hosted Postgres URL (Neon, Supabase, or another provider) belongs in the deployment environment, not `127.0.0.1`.
 
 ```bash
 npm run db:deploy
@@ -94,7 +104,7 @@ npm run build
 npm start
 ```
 
-Host the Node server behind HTTPS. Point `NEXT_PUBLIC_SITE_URL` at the public origin. Keep MySQL and object storage credentials in the host environment, not in client code.
+Host the Node server behind HTTPS. Point `NEXT_PUBLIC_SITE_URL` at the public origin. Keep PostgreSQL and object storage credentials in the host environment, not in client code. The build step queries the database while prerendering, so `DATABASE_URL` on the host must be a reachable Postgres connection string.
 
 Suggested checks before launch:
 
@@ -110,7 +120,7 @@ Favorites are stored in the browser only. There are no visitor accounts.
 
 ## Stack notes
 
-The app uses Next.js 16, React 19, Tailwind CSS 4, Prisma 6, and MySQL. Prisma 6 is pinned because the newest Prisma CLI available during setup was an 8.0 release candidate that did not match the client. Motion, GSAP, React Three Fiber, and Lenis are used for specific interactions rather than for every element.
+The app uses Next.js 16, React 19, Tailwind CSS 4, Prisma 6, and PostgreSQL. Prisma 6 is pinned because the newest Prisma CLI available during setup was an 8.0 release candidate that did not match the client. Motion, GSAP, React Three Fiber, and Lenis are used for specific interactions rather than for every element.
 
 ## Known limitations
 

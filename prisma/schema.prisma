@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -117,8 +117,8 @@ model SiteSetting {
   footerText             String      @db.Text
   featuredSectionVisible Boolean     @default(true)
   instagramHandle        String?     @db.VarChar(100)
-  privacyBody            String      @db.LongText
-  termsBody              String      @db.LongText
+  privacyBody            String      @db.Text
+  termsBody              String      @db.Text
   showPromptOfDay        Boolean     @default(true)
   showProcess            Boolean     @default(true)
   showInstagramCta       Boolean     @default(true)
@@ -173,8 +173,8 @@ model Creation {
   description        String         @db.Text
   mediaType          MediaType
   status             CreationStatus @default(DRAFT)
-  prompt             String         @db.LongText
-  negativePrompt     String?        @db.LongText
+  prompt             String         @db.Text
+  negativePrompt     String?        @db.Text
   generationSettings Json?
   aspectRatio        String?        @db.VarChar(32)
   featured           Boolean        @default(false)
