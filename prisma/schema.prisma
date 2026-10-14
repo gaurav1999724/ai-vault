@@ -1,0 +1,395 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  IMAGE_SERIES
+  TUTORIAL
+}
+
+enum CreationStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+}
+
+enum MediaRole {
+  COVER
+  MAIN
+  GALLERY
+  REFERENCE
+  POSTER
+  SOURCE
+  DOWNLOAD
+}
+
+enum AnalyticsEventType {
+  CREATION_VIEW
+  PROMPT_COPY
+  TUTORIAL_VIEW
+  FAVORITE
+  OUTBOUND_TOOL_CLICK
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model AdminUser {
+  id           String         @id @default(cuid())
+  email        String         @unique @db.VarChar(255)
+  name         String         @db.VarChar(120)
+  passwordHash String         @db.VarChar(255)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  sessions     AdminSession[]
+}
+
+model AdminSession {
+  id        String    @id @default(cuid())
+  userId    String
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique @db.VarChar(128)
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuthAttempt {
+  id        String   @id @default(cuid())
+  keyHash   String   @db.VarChar(128)
+  createdAt DateTime @default(now())
+
+  @@index([keyHash, createdAt])
+}
+
+model CreatorProfile {
+  id                     String      @id @default("default")
+  name                   String      @db.VarChar(120)
+  username               String      @db.VarChar(80)
+  profileImageId         String?
+  profileImage           MediaAsset? @relation("ProfileImage", fields: [profileImageId], references: [id], onDelete: Restrict)
+  heroEyebrow            String      @db.VarChar(255)
+  heroHeading            String      @db.Text
+  heroSubtitle           String      @db.Text
+  biography              String      @db.Text
+  professionalIntro      String      @db.Text
+  philosophy             String      @db.Text
+  specialties            Json
+  interests              Json
+  instagramUrl           String?     @db.VarChar(500)
+  youtubeUrl             String?     @db.VarChar(500)
+  githubUrl              String?     @db.VarChar(500)
+  otherSocial            Json
+  contactEmail           String?     @db.VarChar(255)
+  collaborationAvailable Boolean     @default(false)
+  seoDescription         String?     @db.VarChar(500)
+  updatedAt              DateTime    @updatedAt
+}
+
+model SiteSetting {
+  id                     String      @id @default("default")
+  websiteTitle           String      @db.VarChar(160)
+  logoAssetId            String?
+  logoAsset              MediaAsset? @relation("Logo", fields: [logoAssetId], references: [id], onDelete: Restrict)
+  faviconAssetId         String?
+  faviconAsset           MediaAsset? @relation("Favicon", fields: [faviconAssetId], references: [id], onDelete: Restrict)
+  defaultSeoTitle        String      @db.VarChar(180)
+  defaultSeoDescription  String      @db.VarChar(500)
+  socialImageAssetId     String?
+  socialImage            MediaAsset? @relation("SocialImage", fields: [socialImageAssetId], references: [id], onDelete: Restrict)
+  contactEmail           String?     @db.VarChar(255)
+  footerText             String      @db.Text
+  featuredSectionVisible Boolean     @default(true)
+  instagramHandle        String?     @db.VarChar(100)
+  privacyBody            String      @db.LongText
+  termsBody              String      @db.LongText
+  showPromptOfDay        Boolean     @default(true)
+  showProcess            Boolean     @default(true)
+  showInstagramCta       Boolean     @default(true)
+  instagramPreviewIds    Json
+  updatedAt              DateTime    @updatedAt
+}
+
+model Category {
+  id           String             @id @default(cuid())
+  name         String             @db.VarChar(80)
+  slug         String             @unique @db.VarChar(120)
+  description  String?            @db.Text
+  coverAssetId String?
+  coverAsset   MediaAsset?        @relation(fields: [coverAssetId], references: [id], onDelete: Restrict)
+  displayOrder Int                @default(0)
+  published    Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  creations    CreationCategory[]
+
+  @@index([published, displayOrder])
+}
+
+model Tag {
+  id        String        @id @default(cuid())
+  name      String        @db.VarChar(40)
+  slug      String        @unique @db.VarChar(80)
+  creations CreationTag[]
+}
+
+model AiTool {
+  id                  String           @id @default(cuid())
+  name                String           @db.VarChar(120)
+  slug                String           @unique @db.VarChar(140)
+  websiteUrl          String?          @db.VarChar(500)
+  logoAssetId         String?
+  logoAsset           MediaAsset?      @relation(fields: [logoAssetId], references: [id], onDelete: Restrict)
+  description         String?          @db.Text
+  supportedMediaTypes Json
+  notes               String?          @db.Text
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  creations           CreationAITool[]
+  tutorials           TutorialTool[]
+}
+
+model Creation {
+  id                 String         @id @default(cuid())
+  title              String         @db.VarChar(160)
+  slug               String         @unique @db.VarChar(180)
+  shortDescription   String         @db.VarChar(500)
+  description        String         @db.Text
+  mediaType          MediaType
+  status             CreationStatus @default(DRAFT)
+  prompt             String         @db.LongText
+  negativePrompt     String?        @db.LongText
+  generationSettings Json?
+  aspectRatio        String?        @db.VarChar(32)
+  featured           Boolean        @default(false)
+  promptOfTheDay     Boolean        @default(false)
+  seoTitle           String?        @db.VarChar(180)
+  seoDescription     String?        @db.VarChar(320)
+  publishedAt        DateTime?
+  viewCount          Int            @default(0)
+  copyCount          Int            @default(0)
+  modelName          String?        @db.VarChar(180)
+  platformName       String?        @db.VarChar(180)
+  seed               String?        @db.VarChar(120)
+  guidanceScale      Float?
+  stepCount          Int?
+  resolution         String?        @db.VarChar(64)
+  durationSeconds    Int?
+  frameRate          String?        @db.VarChar(32)
+  cameraMovement     String?        @db.VarChar(255)
+  motionInstructions String?        @db.Text
+  characterNotes     String?        @db.Text
+  workflowNotes      String?        @db.Text
+  limitations        String?        @db.Text
+  credits            String?        @db.Text
+  subscriptions      String?        @db.Text
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  media              CreationMedia[]
+  categories         CreationCategory[]
+  tags               CreationTag[]
+  tools              CreationAITool[]
+  workflowSteps      CreationStep[]
+  tutorials          TutorialCreation[]
+  events             AnalyticsEvent[]
+
+  @@index([status, publishedAt])
+  @@index([featured, status])
+  @@index([promptOfTheDay, status])
+  @@index([mediaType, status])
+}
+
+model CreationMedia {
+  id         String     @id @default(cuid())
+  creationId String
+  creation   Creation   @relation(fields: [creationId], references: [id], onDelete: Cascade)
+  assetId    String
+  asset      MediaAsset @relation(fields: [assetId], references: [id], onDelete: Restrict)
+  role       MediaRole
+  sortOrder  Int        @default(0)
+  altText    String?    @db.VarChar(300)
+
+  @@index([creationId, sortOrder])
+  @@index([assetId])
+}
+
+model CreationStep {
+  id           String      @id @default(cuid())
+  creationId   String
+  creation     Creation    @relation(fields: [creationId], references: [id], onDelete: Cascade)
+  order        Int
+  title        String      @db.VarChar(160)
+  body         String      @db.Text
+  mediaAssetId String?
+  mediaAsset   MediaAsset? @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
+  externalLink String?     @db.VarChar(500)
+  warning      String?     @db.Text
+  tip          String?     @db.Text
+
+  @@index([creationId, order])
+}
+
+model CreationCategory {
+  creationId String
+  categoryId String
+  creation   Creation @relation(fields: [creationId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@id([creationId, categoryId])
+  @@index([categoryId])
+}
+
+model CreationTag {
+  creationId String
+  tagId      String
+  creation   Creation @relation(fields: [creationId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([creationId, tagId])
+  @@index([tagId])
+}
+
+model CreationAITool {
+  creationId String
+  toolId     String
+  modelName  String?  @db.VarChar(180)
+  creation   Creation @relation(fields: [creationId], references: [id], onDelete: Cascade)
+  tool       AiTool   @relation(fields: [toolId], references: [id], onDelete: Restrict)
+
+  @@id([creationId, toolId])
+  @@index([toolId])
+}
+
+model Tutorial {
+  id              String         @id @default(cuid())
+  title           String         @db.VarChar(160)
+  slug            String         @unique @db.VarChar(180)
+  coverAssetId    String?
+  coverAsset      MediaAsset?    @relation(fields: [coverAssetId], references: [id], onDelete: Restrict)
+  summary         String         @db.Text
+  difficulty      Difficulty     @default(BEGINNER)
+  durationMinutes Int            @default(15)
+  status          CreationStatus @default(DRAFT)
+  seoTitle        String?        @db.VarChar(180)
+  seoDescription  String?        @db.VarChar(320)
+  tips            String?        @db.Text
+  troubleshooting String?        @db.Text
+  publishedAt     DateTime?
+  viewCount       Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  steps           TutorialStep[]
+  tools           TutorialTool[]
+  creations       TutorialCreation[]
+  events          AnalyticsEvent[]
+
+  @@index([status, publishedAt])
+}
+
+model TutorialStep {
+  id           String      @id @default(cuid())
+  tutorialId   String
+  tutorial     Tutorial    @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
+  order        Int
+  title        String      @db.VarChar(160)
+  body         String      @db.Text
+  mediaAssetId String?
+  mediaAsset   MediaAsset? @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
+  externalLink String?     @db.VarChar(500)
+  warning      String?     @db.Text
+  tip          String?     @db.Text
+
+  @@index([tutorialId, order])
+}
+
+model TutorialTool {
+  tutorialId String
+  toolId     String
+  tutorial   Tutorial @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
+  tool       AiTool   @relation(fields: [toolId], references: [id], onDelete: Restrict)
+
+  @@id([tutorialId, toolId])
+}
+
+model TutorialCreation {
+  tutorialId String
+  creationId String
+  tutorial   Tutorial @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
+  creation   Creation @relation(fields: [creationId], references: [id], onDelete: Cascade)
+
+  @@id([tutorialId, creationId])
+  @@index([creationId])
+}
+
+model MediaAsset {
+  id               String         @id @default(cuid())
+  storageKey       String         @unique @db.VarChar(400)
+  publicUrl        String         @db.VarChar(800)
+  thumbnailKey     String?        @db.VarChar(400)
+  thumbnailUrl     String?        @db.VarChar(800)
+  mimeType         String         @db.VarChar(120)
+  kind             MediaKind
+  width            Int?
+  height           Int?
+  durationSeconds  Float?
+  sizeBytes        Int
+  altText          String?        @db.VarChar(300)
+  originalFilename String         @db.VarChar(255)
+  createdAt        DateTime       @default(now())
+  creationMedia    CreationMedia[]
+  creationSteps    CreationStep[]
+  tutorialSteps    TutorialStep[]
+  categoryCovers   Category[]
+  toolLogos        AiTool[]
+  tutorialCovers   Tutorial[]
+  profileImages    CreatorProfile[] @relation("ProfileImage")
+  logos            SiteSetting[]    @relation("Logo")
+  favicons         SiteSetting[]    @relation("Favicon")
+  socialImages     SiteSetting[]    @relation("SocialImage")
+
+  @@index([kind, createdAt])
+  @@index([originalFilename])
+}
+
+model AnalyticsEvent {
+  id         String             @id @default(cuid())
+  type       AnalyticsEventType
+  creationId String?
+  creation   Creation?          @relation(fields: [creationId], references: [id], onDelete: SetNull)
+  tutorialId String?
+  tutorial   Tutorial?          @relation(fields: [tutorialId], references: [id], onDelete: SetNull)
+  dedupeKey  String?            @unique @db.VarChar(128)
+  createdAt  DateTime           @default(now())
+
+  @@index([type, createdAt])
+  @@index([creationId, type])
+}
+
+model ContactMessage {
+  id        String    @id @default(cuid())
+  name      String    @db.VarChar(80)
+  email     String    @db.VarChar(180)
+  subject   String    @db.VarChar(140)
+  message   String    @db.Text
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([readAt])
+}

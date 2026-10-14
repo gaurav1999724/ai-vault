@@ -1,26 +1,285 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #08090d;
+  --color-panel: #101218;
+  --color-surface: #171a23;
+  --color-ink: #f4f4f5;
+  --color-muted: #9ca3af;
+  --color-violet: #8b5cf6;
+  --color-cyan: #5de4ff;
+  --color-warm: #ff8b6a;
+  --color-line: rgb(255 255 255 / 0.12);
+  --font-sans: var(--font-outfit), sans-serif;
+  --font-display: var(--font-instrument), serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: #08090d;
+  color: #f4f4f5;
+  scroll-behavior: auto;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100%;
+  background:
+    radial-gradient(900px 480px at 85% -10%, rgb(139 92 246 / 0.16), transparent 60%),
+    radial-gradient(700px 420px at -10% 20%, rgb(93 228 255 / 0.08), transparent 55%),
+    #08090d;
+  font-family: var(--font-sans);
+  overflow-x: clip;
+}
+
+::selection {
+  background: #8b5cf6;
+  color: white;
+}
+
+:focus-visible {
+  outline: 2px solid #5de4ff;
+  outline-offset: 3px;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.grain {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.55'/></svg>");
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+}
+
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}
+
+html.has-custom-cursor input,
+html.has-custom-cursor textarea,
+html.has-custom-cursor select,
+html.has-custom-cursor [contenteditable="true"] {
+  cursor: text !important;
+}
+
+.prose-vault {
+  color: #d4d4d8;
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.prose-vault h2,
+.prose-vault h3 {
+  margin-top: 1.5rem;
+  color: #f4f4f5;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  line-height: 1.1;
+}
+
+.prose-vault p + p,
+.prose-vault ul,
+.prose-vault ol {
+  margin-top: 0.9rem;
+}
+
+.prose-vault ul,
+.prose-vault ol {
+  padding-left: 1.2rem;
+}
+
+.prose-vault a {
+  color: #5de4ff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.icon-disc {
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.03));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
+    0 0 0 0 rgb(93 228 255 / 0);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.icon-disc:hover {
+  transform: translateY(-2px);
+  border-color: rgb(139 92 246 / 0.75);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    0 10px 24px rgb(93 228 255 / 0.14);
+}
+
+.menu-mark {
+  position: relative;
+  display: block;
+  height: 0.7rem;
+  width: 1rem;
+}
+
+.menu-mark span {
+  position: absolute;
+  left: 0;
+  height: 1.5px;
+  width: 100%;
+  background: currentColor;
+  transition: transform 240ms ease, top 240ms ease, bottom 240ms ease;
+}
+
+.menu-mark span:first-child {
+  top: 0;
+}
+
+.menu-mark span:last-child {
+  bottom: 0;
+}
+
+.menu-mark[data-open="true"] span:first-child {
+  top: 0.32rem;
+  transform: rotate(45deg);
+}
+
+.menu-mark[data-open="true"] span:last-child {
+  bottom: 0.32rem;
+  transform: rotate(-45deg);
+}
+
+.vault-cursor {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+html.has-custom-cursor .vault-cursor {
+  display: block;
+}
+
+.vault-cursor-halo,
+.vault-cursor-ring,
+.vault-cursor-dot,
+.vault-cursor-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+.vault-cursor-halo {
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgb(93 228 255 / 0.32), transparent 68%);
+  transition: width 200ms ease, height 200ms ease, margin 200ms ease;
+}
+
+.vault-cursor-ring {
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border-radius: 999px;
+  border: 1px solid rgb(244 244 245 / 0.92);
+  box-shadow: 0 0 16px rgb(93 228 255 / 0.45);
+  transition: width 200ms ease, height 200ms ease, margin 200ms ease, border-radius 200ms ease;
+}
+
+.vault-cursor-dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 999px;
+  background: #f4f4f5;
+  box-shadow: 0 0 12px rgb(93 228 255 / 0.9);
+  transition: opacity 160ms ease;
+}
+
+.vault-cursor-label {
+  transform: translate(-50%, -50%);
+  color: #f4f4f5;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 10px rgb(93 228 255 / 0.7);
+}
+
+.vault-cursor[data-mode="view"] .vault-cursor-ring,
+.vault-cursor[data-mode="view"] .vault-cursor-halo {
+  width: 76px;
+  height: 76px;
+  margin: -38px 0 0 -38px;
+}
+
+.vault-cursor[data-mode="copy"] .vault-cursor-ring,
+.vault-cursor[data-mode="copy"] .vault-cursor-halo {
+  width: 86px;
+  height: 86px;
+  margin: -43px 0 0 -43px;
+}
+
+.vault-cursor[data-mode="drag"] .vault-cursor-ring {
+  width: 68px;
+  height: 34px;
+  margin: -17px 0 0 -34px;
+}
+
+.vault-cursor[data-mode="drag"] .vault-cursor-halo {
+  width: 76px;
+  height: 42px;
+  margin: -21px 0 0 -38px;
+}
+
+.vault-cursor[data-mode="link"] .vault-cursor-ring {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+}
+
+.vault-cursor[data-mode="3d"] .vault-cursor-ring {
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+}
+
+.vault-cursor[data-mode="view"] .vault-cursor-dot,
+.vault-cursor[data-mode="copy"] .vault-cursor-dot,
+.vault-cursor[data-mode="drag"] .vault-cursor-dot {
+  opacity: 0;
+}
+
+@media (max-width: 1023px), (pointer: coarse) {
+  html.has-custom-cursor .vault-cursor {
+    display: none;
+  }
+}
+
+.admin-table th {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: auto !important;
+  }
+
+  .vault-cursor {
+    display: none !important;
+  }
+
+  .icon-disc,
+  .menu-mark span {
+    transition: none;
+  }
+
+  .icon-disc:hover {
+    transform: none;
+  }
 }
