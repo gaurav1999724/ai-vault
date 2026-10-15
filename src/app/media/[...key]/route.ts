@@ -2,6 +2,7 @@ import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import path from "node:path";
 import { Readable } from "node:stream";
+import { head } from "@vercel/blob";
 import { blobPathname } from "@/lib/media-file";
 import { localUploadRoot, privateBlobReadUrl } from "@/lib/storage";
 
@@ -73,6 +74,7 @@ export async function GET(request: Request, context: { params: Promise<{ key: st
   } catch {
     if (!process.env.BLOB_READ_WRITE_TOKEN || !blobPathname(relative)) return new Response("Not found", { status: 404 });
     try {
+      await head(relative);
       const url = await privateBlobReadUrl(relative);
       return Response.redirect(url, 302);
     } catch {
