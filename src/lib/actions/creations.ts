@@ -2,7 +2,7 @@
 
 import { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
-import { updateTag } from "next/cache";
+import { revalidateTag, updateTag } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { slugify } from "@/lib/slug";
@@ -10,10 +10,15 @@ import { creationSchema, fieldErrors } from "@/lib/validators/creation";
 import type { ActionResult } from "@/types/content";
 
 function invalidate(slug?: string) {
-  updateTag("creations");
-  updateTag("categories");
-  updateTag("sitemap");
-  if (slug) updateTag(`creation:${slug}`);
+  const tags = ["creations", "categories", "sitemap"];
+  if (slug) tags.push(`creation:${slug}`);
+  try {
+    for (const tag of tags) updateTag(tag);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (!message.includes("Server Action")) throw error;
+    for (const tag of tags) revalidateTag(tag, "max");
+  }
 }
 
 export async function saveCreation(input: unknown): Promise<ActionResult> {
@@ -122,7 +127,7 @@ export async function saveCreation(input: unknown): Promise<ActionResult> {
         });
       }
       return creation;
-    });
+    }, { maxWait: 10_000, timeout: 20_000 });
     invalidate(saved.slug);
     return { ok: true, id: saved.id, slug: saved.slug, message: data.status === "PUBLISHED" ? "Published." : "Draft saved." };
   } catch (error) {
@@ -132,6 +137,7 @@ export async function saveCreation(input: unknown): Promise<ActionResult> {
     if (error instanceof Error && error.message === "MISSING") {
       return { ok: false, message: "This creation no longer exists." };
     }
+    console.error(error);
     return { ok: false, message: "The creation could not be saved." };
   }
 }

@@ -20,6 +20,7 @@ if (process.env.S3_PUBLIC_BASE_URL) {
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  serverExternalPackages: ["exceljs"],
   turbopack: {
     rules: {
       "*.css": {

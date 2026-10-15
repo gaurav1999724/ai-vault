@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BarChart3, BookOpen, FolderOpen, Images, LayoutDashboard, LogOut, Mail, Menu, Plus, Settings, Tags, User, Wrench, X } from "lucide-react";
+import { BarChart3, BookOpen, FileSpreadsheet, FolderOpen, Images, LayoutDashboard, LogOut, Mail, Menu, Plus, Settings, Tags, User, Wrench, X } from "lucide-react";
 import { logoutAction } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ const links = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/creations", label: "Creations", icon: Images },
   { href: "/admin/creations/new", label: "Add Creation", icon: Plus },
+  { href: "/admin/creations/import", label: "Import Excel", icon: FileSpreadsheet },
   { href: "/admin/categories", label: "Categories", icon: Tags },
   { href: "/admin/ai-tools", label: "AI Tools", icon: Wrench },
   { href: "/admin/tutorials", label: "Tutorials", icon: BookOpen },
@@ -28,7 +29,8 @@ export function AdminSidebar() {
     <nav className="flex h-full flex-col gap-1 p-4" aria-label="Admin">
       <p className="px-3 pb-4 font-display text-2xl">Vault admin</p>
       {links.map((link) => {
-        const active = link.href === "/admin" ? pathname === "/admin" : pathname.startsWith(link.href);
+        const nested = links.some((other) => other.href !== link.href && other.href.startsWith(`${link.href}/`) && pathname.startsWith(other.href));
+        const active = link.href === "/admin" ? pathname === "/admin" : pathname.startsWith(link.href) && !nested;
         const Icon = link.icon;
         return (
           <Link key={link.href} href={link.href} onClick={() => setOpen(false)} className={cn("flex items-center gap-3 rounded-xl px-3 py-2 text-sm", active ? "bg-white/10 text-ink" : "text-muted hover:bg-white/5 hover:text-ink")}>
