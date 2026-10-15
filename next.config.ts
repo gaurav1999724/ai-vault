@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const remotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [
   { protocol: "https", hostname: "*.amazonaws.com" },
   { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
+  { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
 ];
 
 if (process.env.S3_PUBLIC_BASE_URL) {

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectMedia, mediaTooLarge, safeFilename } from "@/lib/uploads";
-import { MAX_IMAGE_BYTES } from "@/lib/constants";
+import { detectMedia, safeFilename } from "@/lib/uploads";
 
 function buffer(bytes: number[]) {
   return Buffer.from(bytes);
@@ -16,12 +15,21 @@ describe("detectMedia", () => {
     expect(detectMedia(webp)?.ext).toBe("webp");
   });
 
+  it("recognizes gif and quicktime signatures", () => {
+    const gif = Buffer.alloc(12);
+    gif.write("GIF89a", 0, "ascii");
+    expect(detectMedia(gif)?.mime).toBe("image/gif");
+    const mov = Buffer.alloc(12);
+    mov.write("ftyp", 4, "ascii");
+    mov.write("qt  ", 8, "ascii");
+    expect(detectMedia(mov)?.ext).toBe("mov");
+  });
+
   it("rejects a renamed text file", () => {
     expect(detectMedia(Buffer.from("not an image!!"))).toBeNull();
   });
 
-  it("enforces size limits", () => {
-    expect(mediaTooLarge("IMAGE", MAX_IMAGE_BYTES + 1)).toBe(true);
+  it("keeps filenames inside a single path segment", () => {
     expect(safeFilename("../prompt.png")).not.toContain("/");
   });
 });

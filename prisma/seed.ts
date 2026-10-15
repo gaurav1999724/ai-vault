@@ -76,6 +76,7 @@ async function imageAsset(prisma: PrismaClient, key: string, title: string, acce
       width: meta.width,
       height: meta.height,
       sizeBytes: source.length,
+      fileBytes: BigInt(source.length),
       altText: `${title}. Demonstration artwork.`,
       originalFilename: `${key.split("/").pop()}`,
     },

@@ -4,6 +4,7 @@ import { updateTag } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { asStringArray } from "@/lib/utils";
+import { isVercelBlobUrl } from "@/lib/media-file";
 import { removeObject } from "@/lib/storage";
 import type { ActionResult } from "@/types/content";
 
@@ -20,8 +21,9 @@ export async function deleteMedia(id: string): Promise<ActionResult> {
   } catch {
     return { ok: false, message: "This file is still used by a creation, tutorial, category, profile, or setting." };
   }
-  await removeObject(asset.storageKey);
-  if (asset.thumbnailKey) await removeObject(asset.thumbnailKey);
+  await removeObject(isVercelBlobUrl(asset.publicUrl) ? asset.publicUrl : asset.storageKey);
+  if (asset.thumbnailUrl && isVercelBlobUrl(asset.thumbnailUrl)) await removeObject(asset.thumbnailUrl);
+  else if (asset.thumbnailKey) await removeObject(asset.thumbnailKey);
   updateTag("creations");
   updateTag("settings");
   return { ok: true, message: "File deleted." };

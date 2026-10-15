@@ -77,7 +77,7 @@ Prompt of the day is exclusive: publishing that flag clears it from other creati
 
 ## Media
 
-Local development stores files in `storage/uploads`, which is not committed. The app serves them from `/media/...`. Images get a WebP thumbnail. Allowed types are JPEG, PNG, WebP, AVIF, MP4, and WebM, checked from file signatures. Images are limited to 15 MB and videos to 80 MB.
+Local development stores files in `storage/uploads`, which is not committed. The app serves them from `/media/...`. Images and videos have no application size cap. On Vercel, set `BLOB_READ_WRITE_TOKEN` by connecting a Blob store: the browser uploads straight to Blob, because Vercel rejects app-server bodies over about 4.5 MB. Image thumbnails are generated in the browser for that path. Local files are checked from their signatures. Common types include JPEG, PNG, WebP, AVIF, GIF, HEIC, MP4, WebM, and QuickTime.
 
 Deleting a library file is refused while a creation, tutorial, category, profile, or setting still references it. Removing a file from one creation leaves it in the library.
 
@@ -85,7 +85,7 @@ Deleting a library file is refused while a creation, tutorial, category, profile
 
 Set `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, and `S3_PUBLIC_BASE_URL`. Optional: `S3_ENDPOINT`, `S3_REGION`, and `S3_FORCE_PATH_STYLE=true` for providers that need path-style URLs. Credentials stay on the server. `S3_PUBLIC_BASE_URL` is the public delivery origin, not a secret.
 
-When those bucket variables are empty, uploads stay on the local disk. That is appropriate for development and a single Node server. Use object storage when you run more than one app instance.
+When Blob and these bucket variables are empty, uploads stay on the local disk. That is appropriate for development and a single Node server. With S3 configured, the browser uploads directly to the bucket. The bucket CORS policy needs to allow `PUT` from the site and expose the `ETag` header. Use Blob or object storage when you run more than one app instance.
 
 ## Development
 

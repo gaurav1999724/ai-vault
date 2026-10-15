@@ -349,6 +349,7 @@ model MediaAsset {
   height           Int?
   durationSeconds  Float?
   sizeBytes        Int
+  fileBytes        BigInt         @default(0)
   altText          String?        @db.VarChar(300)
   originalFilename String         @db.VarChar(255)
   createdAt        DateTime       @default(now())

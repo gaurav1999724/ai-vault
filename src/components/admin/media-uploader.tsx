@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { sendMediaFile } from "@/lib/browser-upload";
 import type { AssetOption } from "@/types/content";
 
 export function MediaUploader({ onUploaded }: { onUploaded: (asset: AssetOption) => void }) {
@@ -13,33 +14,22 @@ export function MediaUploader({ onUploaded }: { onUploaded: (asset: AssetOption)
         <input
           className="sr-only"
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm"
+          accept="image/*,video/*"
           onChange={(event) => {
             const file = event.target.files?.[0];
             event.target.value = "";
             if (!file) return;
             setError("");
-            const data = new FormData();
-            data.set("file", file);
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", "/api/admin/upload");
-            xhr.upload.onprogress = (progressEvent) => {
-              if (progressEvent.lengthComputable) setProgress(Math.round((progressEvent.loaded / progressEvent.total) * 100));
-            };
-            xhr.onload = () => {
-              setProgress(null);
-              const body = JSON.parse(xhr.responseText || "{}") as { message?: string; asset?: AssetOption };
-              if (xhr.status >= 400 || !body.asset) {
-                setError(body.message || "Upload failed.");
-                return;
-              }
-              onUploaded(body.asset);
-            };
-            xhr.onerror = () => {
-              setProgress(null);
-              setError("Upload failed.");
-            };
-            xhr.send(data);
+            setProgress(0);
+            void sendMediaFile(file, setProgress)
+              .then((asset) => {
+                setProgress(null);
+                onUploaded(asset);
+              })
+              .catch((reason: unknown) => {
+                setProgress(null);
+                setError(reason instanceof Error && reason.message ? reason.message : "Upload failed.");
+              });
           }}
         />
       </label>

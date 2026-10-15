@@ -23,7 +23,7 @@ export default async function MediaPage({ searchParams }: { searchParams: Promis
             width: asset.width,
             height: asset.height,
             mimeType: asset.mimeType,
-            sizeBytes: asset.sizeBytes,
+            sizeBytes: asset.fileBytes > BigInt(0) ? Number(asset.fileBytes) : asset.sizeBytes,
           }))}
         />
       </div>

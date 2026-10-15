@@ -1,8 +1,6 @@
 export const SESSION_COOKIE = "acv_session";
 export const VISITOR_COOKIE = "acv_visitor";
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
-export const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
-export const MAX_VIDEO_BYTES = 80 * 1024 * 1024;
 export const PAGE_SIZE = 12;
 export const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 export const LOGIN_MAX_ATTEMPTS = 8;

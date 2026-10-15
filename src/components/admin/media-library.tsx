@@ -5,6 +5,19 @@ import { useState, useTransition } from "react";
 import { deleteMedia } from "@/lib/actions/media";
 import { MediaUploader } from "@/components/admin/media-uploader";
 
+function formatBytes(size: number) {
+  if (!Number.isFinite(size) || size < 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = size;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  const digits = unit === 0 || value >= 10 ? 0 : 1;
+  return `${value.toFixed(digits)} ${units[unit]}`;
+}
+
 export function MediaLibrary({
   query,
   assets,
@@ -45,7 +58,7 @@ export function MediaLibrary({
               <video src={asset.publicUrl} className="aspect-square w-full rounded-xl bg-black" muted controls preload="metadata" />
             )}
             <p className="mt-3 truncate text-sm">{asset.originalFilename}</p>
-            <p className="text-xs text-muted">{asset.mimeType} · {Math.ceil(asset.sizeBytes / 1024)} KB {asset.width ? `· ${asset.width}×${asset.height}` : ""}</p>
+            <p className="text-xs text-muted">{asset.mimeType} · {formatBytes(asset.sizeBytes)} {asset.width ? `· ${asset.width}×${asset.height}` : ""}</p>
             <button type="button" disabled={pending} className="mt-3 text-sm text-warm" onClick={() => start(async () => {
               const result = await deleteMedia(asset.id);
               setMessage(result.message || "");
