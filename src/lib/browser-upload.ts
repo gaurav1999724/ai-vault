@@ -51,7 +51,7 @@ async function uploadBlob(file: File, kind: "IMAGE" | "VIDEO", onProgress: (perc
   const contentType = contentTypeFor(file);
   const folder = kind === "IMAGE" ? "images" : "videos";
   const stored = await upload(`${folder}/${safeFilename(file.name)}`, file, {
-    access: "public",
+    access: "private",
     handleUploadUrl: "/api/admin/upload",
     contentType,
     clientPayload: JSON.stringify({ contentType }),
@@ -63,7 +63,7 @@ async function uploadBlob(file: File, kind: "IMAGE" | "VIDEO", onProgress: (perc
     try {
       const thumbType = preview.thumbnail.type || "image/webp";
       const thumb = await upload("thumbs/preview.webp", preview.thumbnail, {
-        access: "public",
+        access: "private",
         handleUploadUrl: "/api/admin/upload",
         contentType: thumbType,
         clientPayload: JSON.stringify({ contentType: thumbType }),

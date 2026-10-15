@@ -11,8 +11,8 @@ import {
   UploadPartCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { del } from "@vercel/blob";
-import { isVercelBlobUrl } from "@/lib/media-file";
+import { del, issueSignedToken, presignUrl } from "@vercel/blob";
+import { blobPathname, isVercelBlobUrl } from "@/lib/media-file";
 
 const localRoot = path.join(process.cwd(), "storage", "uploads");
 
@@ -81,11 +81,18 @@ export async function putObject(key: string, body: Buffer, contentType: string) 
   return `/media/${key.split(path.sep).join("/")}`;
 }
 
+export async function privateBlobReadUrl(pathname: string) {
+  const validUntil = Date.now() + 60 * 60 * 1000;
+  const issued = await issueSignedToken({ pathname, operations: ["get"], validUntil });
+  const signed = await presignUrl(issued, { access: "private", operation: "get", pathname, validUntil });
+  return signed.presignedUrl;
+}
+
 export async function removeObject(key: string) {
   if (!key || key.includes("..")) return;
-  if (isVercelBlobUrl(key)) {
+  if (isVercelBlobUrl(key) || (process.env.BLOB_READ_WRITE_TOKEN && blobPathname(key))) {
     await del(key).catch(() => undefined);
-    return;
+    if (isVercelBlobUrl(key) || storageMode() === "s3") return;
   }
   if (storageMode() === "s3") {
     await s3().send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }));

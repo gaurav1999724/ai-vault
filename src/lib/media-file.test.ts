@@ -18,6 +18,7 @@ describe("media files", () => {
 
   it("only accepts this project's blob urls", () => {
     expect(isVercelBlobUrl("https://store.public.blob.vercel-storage.com/images/a.png")).toBe(true);
+    expect(isVercelBlobUrl("https://store.private.blob.vercel-storage.com/images/a.png")).toBe(true);
     expect(isVercelBlobUrl("https://example.com/images/a.png")).toBe(false);
     expect(blobPathname("/images/poster.png")).toBe("images/poster.png");
     expect(blobPathname("../images/poster.png")).toBeNull();

@@ -77,7 +77,7 @@ Prompt of the day is exclusive: publishing that flag clears it from other creati
 
 ## Media
 
-Local development stores files in `storage/uploads`, which is not committed. The app serves them from `/media/...`. Images and videos have no application size cap. On Vercel, set `BLOB_READ_WRITE_TOKEN` by connecting a Blob store: the browser uploads straight to Blob, because Vercel rejects app-server bodies over about 4.5 MB. Image thumbnails are generated in the browser for that path. Local files are checked from their signatures. Common types include JPEG, PNG, WebP, AVIF, GIF, HEIC, MP4, WebM, and QuickTime.
+Local development stores files in `storage/uploads`, which is not committed. The app serves them from `/media/...`. Images and videos have no application size cap. On Vercel, set `BLOB_READ_WRITE_TOKEN` by connecting a Blob store: the browser uploads straight to Blob, because Vercel rejects app-server bodies over about 4.5 MB. Private Blob stores are supported, and the site serves those files from `/media`. Image thumbnails are generated in the browser for that path. Local files are checked from their signatures. Common types include JPEG, PNG, WebP, AVIF, GIF, HEIC, MP4, WebM, and QuickTime.
 
 Deleting a library file is refused while a creation, tutorial, category, profile, or setting still references it. Removing a file from one creation leaves it in the library.
 

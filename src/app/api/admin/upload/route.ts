@@ -13,6 +13,7 @@ import {
   isVercelBlobUrl,
   kindFromContentType,
   kindFromFile,
+  siteMediaUrl,
   s3PartCount,
   s3PartSize,
   storageKeyFor,
@@ -164,7 +165,7 @@ async function registerBlob(body: Record<string, unknown>) {
       const thumbKey = blobPathname(thumb.pathname);
       if (thumbKey && kindFromContentType(thumb.contentType) === "IMAGE") {
         thumbnailKey = thumbKey;
-        thumbnailUrl = thumb.url;
+        thumbnailUrl = siteMediaUrl(thumbKey);
       }
     } catch {
       thumbnailKey = null;
@@ -173,7 +174,7 @@ async function registerBlob(body: Record<string, unknown>) {
   try {
     return await saved({
       storageKey,
-      publicUrl: meta.url,
+      publicUrl: siteMediaUrl(storageKey),
       thumbnailKey,
       thumbnailUrl,
       mimeType: meta.contentType,

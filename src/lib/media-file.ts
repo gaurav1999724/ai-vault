@@ -73,6 +73,10 @@ export function isVercelBlobUrl(value: string) {
   }
 }
 
+export function siteMediaUrl(pathname: string) {
+  return `/media/${pathname.replace(/^\/+/, "")}`;
+}
+
 export function blobPathname(pathname: string) {
   const key = pathname.replace(/^\/+/, "");
   if (!key || key.includes("..") || key.length > 400) return null;
